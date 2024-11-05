@@ -1,5 +1,5 @@
 import * as Carousel from "./Carousel.js";
-import axios from "axios";
+// import axios from "./node_modules/axios";
 
 // The breed selection input element.
 const breedSelect = document.getElementById("breedSelect");
@@ -11,7 +11,8 @@ const progressBar = document.getElementById("progressBar");
 const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
-const API_KEY = "";
+const API_KEY =
+  "live_ZNKsj8h7rOLpwvJRL9ih5mbzZhC0sGAtLB2tGvXKM8eg22rzS0ZCmYPXJinoYbuK";
 
 /**
  * 1. Create an async function "initialLoad" that does the following:
@@ -21,6 +22,21 @@ const API_KEY = "";
  *  - Each option should display text equal to the name of the breed.
  * This function should execute immediately.
  */
+async function initialLoad() {
+  console.log("hello initiaload");
+  const response = await fetch(
+    "https://api.thecatapi.com/v1/breeds?api_key=" + API_KEY
+  );
+  const jsonData = await response.json();
+  jsonData.forEach((catInfo) => {
+    const option = document.createElement("option");
+    option.value = catInfo.id;
+    option.innerHTML = catInfo.name;
+    breedSelect.appendChild(option);
+  });
+}
+
+initialLoad();
 
 /**
  * 2. Create an event handler for breedSelect that does the following:
@@ -36,6 +52,30 @@ const API_KEY = "";
  * - Each new selection should clear, re-populate, and restart the Carousel.
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
+
+breedSelect.addEventListener("change", async (event) => {
+  console.log("hello breedselectchange");
+  const response = await fetch(
+    "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=" +
+      event.target.value +
+      "&api_key=" +
+      API_KEY
+  );
+  const jsonData = await response.json();
+  console.log(jsonData);
+  jsonData.forEach(async (catImage) => {
+    const response2 = await fetch(
+      "https://api.thecatapi.com/v1/images/" + catImage.id
+    );
+    const jsonData2 = await response2.json();
+    console.log(jsonData2);
+    Carousel.createCarouselItem(
+      catImage.url,
+      jsonData2.description,
+      catImage.id
+    );
+  });
+});
 
 /**
  * 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."
